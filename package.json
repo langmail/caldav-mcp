@@ -1,6 +1,6 @@
 {
 	"name": "caldav-mcp",
-	"version": "0.11.4",
+	"version": "0.12.0",
 	"description": "A CalDAV client using Model Context Protocol (MCP) to expose calendar operations as tools for AI assistants.",
 	"homepage": "https://github.com/langmail/caldav-mcp#readme",
 	"bugs": {
@@ -62,7 +62,7 @@
 		"shx": "^0.4.0",
 		"tsx": "^4.21.0",
 		"typescript": "^7.0.2",
-		"ultracite": "8.2.0",
+		"ultracite": "8.3.1",
 		"vitest": "^5.0.0"
 	},
 	"engines": {

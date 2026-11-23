@@ -9,11 +9,8 @@ import {
 	readScheduling,
 	toCalAddress,
 } from "./calendar-address.js";
-import {
-	type RecurrenceRuleInput,
-	recurrenceRuleSchema,
-	toRecurrenceRule,
-} from "./recurrence-rule.js";
+import type { RecurrenceRuleInput } from "./recurrence-rule.js";
+import { recurrenceRuleSchema, toRecurrenceRule } from "./recurrence-rule.js";
 import { carryOverWholeDayDates, toWholeDayDate } from "./whole-day-date.js";
 
 interface UpdateEventInput {
