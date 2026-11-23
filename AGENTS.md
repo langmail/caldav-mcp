@@ -9,6 +9,7 @@ MCP server exposing CalDAV calendar operations as tools for AI assistants.
 - Avoid import cycles; move shared code into a module both sides import.
 
 ## Before committing
+
 - Run `npm install` once after cloning: its `prepare` script installs the git hooks (Biome, tests, docs, commitlint). Without it nothing checks your commits locally.
 - Never commit with `--no-verify`. If a hook fails, fix the cause; `npm run check:fix` fixes most Biome errors.
 - Run `npm run validate` before pushing; CI runs the same checks and fails the PR otherwise.
