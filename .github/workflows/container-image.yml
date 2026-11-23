@@ -1,0 +1,57 @@
+name: Container image
+# Called by the release workflow after each release. Run it by hand
+# (Actions > Container image > Run workflow) to publish an image for a
+# version that was released without one.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Released version to publish, without the "v" (e.g. 0.12.1)
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Released version to publish, without the "v" (e.g. 0.12.1)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write # Push the container image to ghcr.io
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Build the tagged release, not whatever main points at now
+          ref: v${{ inputs.version }}
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Container image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/langmail/caldav-mcp
+          # latest follows the newest release; a by-hand run for an older
+          # version would move it backwards, so check before passing one
+          tags: |
+            type=semver,pattern={{version}},value=v${{ inputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ inputs.version }}
+            type=semver,pattern={{major}},value=v${{ inputs.version }}
+            type=raw,value=latest
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
