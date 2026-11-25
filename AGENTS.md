@@ -30,7 +30,7 @@ What `WORKFLOW.md` and the shared skills need to know about this repository.
 - **Dev stack:** None. `npm run dev` runs the server in watch mode against the CalDAV account in `.env`.
 - **Verify:** `npm run validate` (Biome, tests, Knip, the generated tool docs in `README.md`, build), then the smoke tests as Smoke tests says.
 - **Ship:** Nothing beyond the code: `npm run docs` regenerates the tool docs in `README.md`.
-- **Release:** A merge to `main` runs semantic-release (`.github/workflows/release.yml`), which computes the version from the commit messages: `feat` releases a minor version, `fix` and `perf` a patch, a breaking change a major one, and `docs`, `test`, `chore`, `style`, `refactor` and `ci` nothing. It publishes the npm package, the MCP Registry entry and the container image on ghcr.io, writes `CHANGELOG.md` and creates the GitHub release; nobody acts. A breaking change publishes a major version, so its PR's Deploy section lists `- [ ] before merge: the maintainer approves the major release`.
+- **Release:** A merge to `main` runs semantic-release (`.github/workflows/release.yml`), which computes the version from the commit messages: `feat` releases a minor version, `fix` and `perf` a patch, a breaking change a major one, and `docs`, `test`, `chore`, `style`, `refactor` and `ci` nothing. It publishes the npm package, the MCP Registry entry and the container image on ghcr.io, writes `CHANGELOG.md` and creates the GitHub release. Nobody acts, except that a breaking change publishes a major version, so its PR's Deploy section lists `- [ ] before merge: the maintainer approves the major release`.
 
 ## Workflow
 
