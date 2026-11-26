@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
 import { toCalendarPath } from "./caldav-href.js";
+import { isoDateTime } from "./iso-datetime.js";
 import type { TodoStatus } from "./todo-status.js";
 import { todoStatusSchema } from "./todo-status.js";
 
@@ -21,17 +22,9 @@ export const createTodoDefinition = {
 	inputSchema: {
 		calendarUrl: z.string(),
 		description: z.string().optional(),
-		due: z
-			.string()
-			.datetime({ offset: true })
-			.optional()
-			.describe("Due datetime (ISO 8601)"),
+		due: isoDateTime("Due datetime").optional(),
 		location: z.string().optional(),
-		start: z
-			.string()
-			.datetime({ offset: true })
-			.optional()
-			.describe("Start datetime (ISO 8601)"),
+		start: isoDateTime("Start datetime").optional(),
 		status: todoStatusSchema
 			.optional()
 			.describe("Defaults to NEEDS-ACTION when omitted"),

@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
 import { hrefFor, toCalendarPath } from "./caldav-href.js";
+import { isoDateTime } from "./iso-datetime.js";
 import type { TodoStatus } from "./todo-status.js";
 import { todoStatusSchema } from "./todo-status.js";
 
@@ -22,9 +23,9 @@ export const updateTodoDefinition = {
 	inputSchema: {
 		calendarUrl: z.string(),
 		description: z.string().optional(),
-		due: z.string().datetime({ offset: true }).optional(),
+		due: isoDateTime("New due datetime").optional(),
 		location: z.string().optional(),
-		start: z.string().datetime({ offset: true }).optional(),
+		start: isoDateTime("New start datetime").optional(),
 		status: todoStatusSchema.optional(),
 		summary: z.string().optional(),
 		uid: z
