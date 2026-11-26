@@ -43,7 +43,8 @@ export function writableAlarms(alarms: Alarm[]): Alarm[] {
 
 /**
  * When each alarm fires, as ISO datetimes. A relative trigger is resolved
- * against `start`; without one it is returned as the raw duration.
+ * against `start`; without one it is returned as the raw duration. ts-caldav
+ * drops `RELATED=END`, so a due-relative trigger is resolved wrongly (#192).
  */
 export function reminderTimes(alarms: Alarm[], start?: Date): string[] {
 	return alarms.map(({ trigger }) => {
@@ -60,18 +61,26 @@ export function reminderTimes(alarms: Alarm[], start?: Date): string[] {
 
 /**
  * The alarms an update writes: `reminderAt` replaces them all with one,
- * `null` removes them, and omitting it keeps the existing ones.
+ * `null` removes them, and omitting it keeps the existing ones. A kept
+ * display alarm that showed the old summary shows the new one.
  */
 export function updatedAlarms(
 	existing: Alarm[] | undefined,
 	reminderAt: string | null | undefined,
-	description: string
+	summary: { before: string; after: string }
 ): Alarm[] | undefined {
 	if (reminderAt === null) {
 		return [];
 	}
 	if (reminderAt !== undefined) {
-		return [reminderAlarm(reminderAt, description)];
+		return [reminderAlarm(reminderAt, summary.after)];
 	}
-	return existing && writableAlarms(existing);
+	return (
+		existing &&
+		writableAlarms(existing).map((alarm) =>
+			alarm.action === "DISPLAY" && alarm.description === summary.before
+				? { ...alarm, description: summary.after }
+				: alarm
+		)
+	);
 }

@@ -86,11 +86,10 @@ export function registerUpdateTodo(client: CalDAVClient, server: McpServer) {
 				completed = priorCompleted ?? new Date();
 			}
 
-			const alarms = updatedAlarms(
-				base.alarms,
-				reminderAt,
-				summary ?? base.summary
-			);
+			const alarms = updatedAlarms(base.alarms, reminderAt, {
+				after: summary ?? base.summary,
+				before: base.summary,
+			});
 
 			const updated = await client.updateTodo(calendarUrl, {
 				...base,

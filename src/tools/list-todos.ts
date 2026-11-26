@@ -93,7 +93,7 @@ export const listTodosDefinition = {
 	},
 	name: "list-todos",
 	returns:
-		"An object `{ todos, total, limit, offset }` where `total` is the count before pagination. Each todo has `uid`, `summary`, `status`, `reminders` (when the task will notify, as ISO datetimes; empty when it has none), and optionally `due`, `start`, `completed`, `description`, `location`.",
+		"An object `{ todos, total, limit, offset }` where `total` is the count before pagination. Each todo has `uid`, `summary`, `status`, `reminders` (when the task will notify, as ISO datetimes, or as the raw offset such as `-PT15M` for a relative reminder on a task without `start`; empty when it has none), and optionally `due`, `start`, `completed`, `description`, `location`.",
 } as const;
 
 export function registerListTodos(client: CalDAVClient, server: McpServer) {

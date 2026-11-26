@@ -114,10 +114,20 @@ function ask(prompt: string, sessionId: string, fresh: boolean): Turn {
 		);
 		return parseStream(out);
 	} catch (error) {
-		const { stderr } = error as { stderr?: string };
-		const { status, stdout } = error as { status?: number; stdout?: string };
+		// Keep the calls made before the failure, so cleanup sees their tasks.
+		const { status, stderr, stdout } = error as {
+			status?: number;
+			stderr?: string;
+			stdout?: string;
+		};
+		let partial: Turn = { calls: [] };
+		try {
+			partial = parseStream(stdout ?? "");
+		} catch {
+			// A line cut off mid-write; the calls before it are lost.
+		}
 		return {
-			calls: [],
+			calls: partial.calls,
 			error: `exit ${status}: ${stderr ?? ""} ${(stdout ?? "").slice(-1500)}`,
 		};
 	}
@@ -172,10 +182,11 @@ async function main() {
 			name: "list-todos",
 		})) as { content: Array<{ text: string }> };
 		const listed = JSON.parse(result.content[0]?.text ?? "{}") as {
-			todos: Array<{ uid: string; reminders: string[] }>;
+			// `main` has no `reminders`: a task without them has none.
+			todos: Array<{ uid: string; reminders?: string[] }>;
 		};
 		const todo = listed.todos.find((t) => t.uid === uid);
-		return todo?.reminders.map((r) => new Date(r).getTime());
+		return todo && (todo.reminders ?? []).map((r) => new Date(r).getTime());
 	};
 
 	const expectReminders = async (
@@ -234,7 +245,7 @@ async function main() {
 			);
 		}
 	} finally {
-		await Promise.all(
+		await Promise.allSettled(
 			[...created].map(([uid, calendarUrl]) =>
 				client.callTool({
 					arguments: { calendarUrl, uid },

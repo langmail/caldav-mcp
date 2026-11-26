@@ -267,6 +267,7 @@ describe("registerUpdateTodo", () => {
 			const passed = mockClient.updateTodo.mock.calls[0]?.[1];
 			expect(passed.alarms).toHaveLength(1);
 			expect(passed.alarms[0].description).toBe("Renamed");
+			expect(typeof passed.alarms[0].trigger).not.toBe("string");
 			expect(String(passed.alarms[0].trigger)).toBe("2026-11-27T09:00:00Z");
 		});
 
@@ -299,6 +300,7 @@ describe("registerUpdateTodo", () => {
 			// TRIGGER;VALUE=DATE-TIME.
 			expect(typeof passed.alarms[0].trigger).not.toBe("string");
 			expect(String(passed.alarms[0].trigger)).toBe("2026-11-27T08:00:00Z");
+			expect(passed.alarms[0].description).toBe("Renamed");
 		});
 	});
 });

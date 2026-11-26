@@ -31,13 +31,14 @@ describe("reminderAlarm", () => {
 });
 
 describe("updatedAlarms", () => {
+	const same = { after: "Task", before: "Task" };
 	const existing: Alarm[] = [
 		{ action: "DISPLAY", description: "Old", trigger: "2026-11-27T08:00:00Z" },
 		{ action: "DISPLAY", description: "Old", trigger: "-PT15M" },
 	];
 
 	it("keeps existing alarms, absolute ones writable again", () => {
-		const alarms = updatedAlarms(existing, undefined, "Task");
+		const alarms = updatedAlarms(existing, undefined, same);
 
 		// A read-back datetime string would make ical.js throw
 		// `invalid duration value`.
@@ -48,11 +49,14 @@ describe("updatedAlarms", () => {
 	});
 
 	it("leaves alarms untouched when the task has none and none are asked for", () => {
-		expect(updatedAlarms(undefined, undefined, "Task")).toBeUndefined();
+		expect(updatedAlarms(undefined, undefined, same)).toBeUndefined();
 	});
 
 	it("replaces all alarms with one at the new time", () => {
-		const alarms = updatedAlarms(existing, "2026-11-27T10:00:00Z", "Renamed");
+		const alarms = updatedAlarms(existing, "2026-11-27T10:00:00Z", {
+			after: "Renamed",
+			before: "Old",
+		});
 
 		expect(alarms).toHaveLength(1);
 		expect(alarms?.[0]?.description).toBe("Renamed");
@@ -61,8 +65,25 @@ describe("updatedAlarms", () => {
 		);
 	});
 
+	it("moves a kept alarm's description to the new summary", () => {
+		const alarms = updatedAlarms(
+			[
+				...existing,
+				{ action: "DISPLAY", description: "Custom", trigger: "-PT1H" },
+			],
+			undefined,
+			{ after: "Renamed", before: "Old" }
+		);
+
+		expect(alarms?.map((a) => a.description)).toEqual([
+			"Renamed",
+			"Renamed",
+			"Custom",
+		]);
+	});
+
 	it("removes all alarms for null", () => {
-		expect(updatedAlarms(existing, null, "Task")).toEqual([]);
+		expect(updatedAlarms(existing, null, same)).toEqual([]);
 	});
 });
 

@@ -102,6 +102,7 @@ describe("registerCreateTodo", () => {
 			action: "DISPLAY",
 			description: "Call the plumber",
 		});
+		expect(typeof passed?.alarms[0].trigger).not.toBe("string");
 		expect(String(passed?.alarms[0].trigger)).toBe("2026-11-27T08:00:00Z");
 	});
 
