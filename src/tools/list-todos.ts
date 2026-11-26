@@ -3,6 +3,7 @@ import type { CalDAVClient, Todo } from "ts-caldav";
 import { z } from "zod";
 import { toCalendarPath } from "./caldav-href.js";
 import { isoDateTime } from "./iso-datetime.js";
+import { reminderTimes } from "./reminder.js";
 import type { TodoStatus } from "./todo-status.js";
 import { todoStatusSchema } from "./todo-status.js";
 
@@ -85,7 +86,7 @@ export const listTodosDefinition = {
 	},
 	name: "list-todos",
 	returns:
-		"An object `{ todos, total, limit, offset }` where `total` is the count before pagination. Each todo has `uid`, `summary`, `status`, and optionally `due`, `start`, `completed`, `description`, `location`.",
+		"An object `{ todos, total, limit, offset }` where `total` is the count before pagination. Each todo has `uid`, `summary`, `status`, `reminders` (when the task will notify, as ISO datetimes, or as the raw offset such as `-PT15M` for a relative reminder on a task without `start`; empty when it has none), and optionally `due`, `start`, `completed`, `description`, `location`.",
 } as const;
 
 export function registerListTodos(client: CalDAVClient, server: McpServer) {
@@ -146,6 +147,7 @@ export function registerListTodos(client: CalDAVClient, server: McpServer) {
 				.sort(compareTodos);
 
 			const todos = filtered.slice(offset, offset + limit).map((t) => ({
+				reminders: reminderTimes(t.alarms ?? [], t.start),
 				status: statusOf(t),
 				summary: t.summary,
 				uid: t.uid,

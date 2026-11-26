@@ -76,6 +76,7 @@ describe("createServer", () => {
 			schema("update-event").properties.end,
 			schema("update-event").properties.recurrenceRule.properties,
 			schema("create-todo").properties.due,
+			schema("create-todo").properties.reminderAt,
 			schema("create-todo").properties.start,
 			schema("update-todo").properties.due,
 			schema("update-todo").properties.start,
