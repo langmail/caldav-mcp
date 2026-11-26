@@ -1,3 +1,9 @@
+# [0.14.0](https://github.com/langmail/caldav-mcp/compare/v0.13.2...v0.14.0) (2026-11-26)
+
+### Features
+
+* let events carry a reminder and a free/busy status ([#112](https://github.com/langmail/caldav-mcp/issues/112)) ([47fe35d](https://github.com/langmail/caldav-mcp/commit/47fe35d677e95737372ff5d479db36943f4e2e94))
+
 ## [0.13.2](https://github.com/langmail/caldav-mcp/compare/v0.13.1...v0.13.2) (2026-11-26)
 
 ### Bug Fixes
