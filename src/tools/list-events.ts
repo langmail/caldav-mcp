@@ -3,6 +3,7 @@ import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
 import { toCalendarPath } from "./caldav-href.js";
 import { readScheduling } from "./calendar-address.js";
+import { readTransparent } from "./event-extras.js";
 
 interface ListEventsInput {
 	calendarUrl: string;
@@ -30,7 +31,7 @@ export const listEventsDefinition = {
 	},
 	name: "list-events",
 	returns:
-		"A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email) and `attendees` (emails)",
+		"A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email), `attendees` (emails), `alarms` (each with `action` and `trigger`, e.g. `-PT30M`) and `transparent` (true when the event is marked free)",
 } as const;
 
 export function registerListEvents(client: CalDAVClient, server: McpServer) {
@@ -50,6 +51,7 @@ export function registerListEvents(client: CalDAVClient, server: McpServer) {
 			const allEvents = await client.getEvents(calendarUrl, options);
 			const data = allEvents.map((e) => {
 				const { organizer, attendees } = readScheduling(e.customFields);
+				const transparent = readTransparent(e.customFields);
 				return {
 					end: e.end,
 					start: e.start,
@@ -59,6 +61,13 @@ export function registerListEvents(client: CalDAVClient, server: McpServer) {
 					...(e.location && { location: e.location }),
 					...(organizer && { organizer }),
 					...(attendees.length > 0 && { attendees }),
+					...(e.alarms?.length && {
+						alarms: e.alarms.map(({ action, trigger }) => ({
+							action,
+							trigger,
+						})),
+					}),
+					...(transparent !== undefined && { transparent }),
 				};
 			});
 			return {

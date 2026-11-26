@@ -9,6 +9,12 @@ import {
 	readScheduling,
 	toCalAddress,
 } from "./calendar-address.js";
+import {
+	reminderBeforeSchema,
+	transparentSchema,
+	updatedAlarms,
+	updatedCustomFields,
+} from "./event-extras.js";
 import { isoDateTime } from "./iso-datetime.js";
 import type { RecurrenceRuleInput } from "./recurrence-rule.js";
 import { recurrenceRuleSchema, toRecurrenceRule } from "./recurrence-rule.js";
@@ -23,8 +29,10 @@ interface UpdateEventInput {
 	location?: string | undefined;
 	organizer?: string | undefined;
 	recurrenceRule?: RecurrenceRuleInput | undefined;
+	reminderBefore?: string | null | undefined;
 	start?: string | undefined;
 	summary?: string | undefined;
+	transparent?: boolean | null | undefined;
 	uid: string;
 	wholeDay?: boolean | undefined;
 }
@@ -43,6 +51,12 @@ export const updateEventDefinition = {
 				"Organizer email (no mailto:); pass to set or change ORGANIZER, or an empty string to remove it (only when the event has no attendees). Omit to leave it as stored."
 			),
 		recurrenceRule: recurrenceRuleSchema.optional(),
+		reminderBefore: reminderBeforeSchema
+			.nullable()
+			.optional()
+			.describe(
+				"Display reminder before the event start, as ISO 8601 duration in weeks, days, hours, minutes or seconds (e.g. P3D, PT30M). Replaces the event's existing display reminders; email and audio reminders are kept. Pass null to remove the display reminders."
+			),
 		start: isoDateTime("New start datetime").optional(),
 		attendees: z
 			.array(emailAddressSchema)
@@ -51,6 +65,12 @@ export const updateEventDefinition = {
 				"The complete new attendee list (no mailto:): it replaces the stored one, so get the current attendees from list-events and include everyone who should stay. An empty list removes all attendees. Omit to leave them as stored. Requires an organizer."
 			),
 		summary: z.string().optional(),
+		transparent: transparentSchema
+			.nullable()
+			.optional()
+			.describe(
+				"Mark the event as free (true) or busy (false). Pass null to clear the free/busy status."
+			),
 		uid: z
 			.string()
 			.describe(
@@ -90,6 +110,20 @@ function mergeSchedulingFields(
 	};
 }
 
+// The scheduling fields, then TRANSP, applied to the stored customFields.
+function nextCustomFields(
+	stored: CustomFields | undefined,
+	organizer: string | undefined,
+	attendees: string[] | undefined,
+	transparent: boolean | null | undefined
+): CustomFields | undefined {
+	const scheduled =
+		organizer !== undefined || attendees !== undefined
+			? mergeSchedulingFields(stored, organizer, attendees)
+			: stored;
+	return updatedCustomFields(scheduled, transparent) ?? scheduled;
+}
+
 export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 	server.registerTool(
 		updateEventDefinition.name,
@@ -107,6 +141,8 @@ export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 				description,
 				location,
 				recurrenceRule,
+				reminderBefore,
+				transparent,
 				organizer,
 				attendees,
 			} = args;
@@ -120,10 +156,20 @@ export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 			}
 
 			const effectiveWholeDay = wholeDay ?? existing.wholeDay;
+			const alarms = updatedAlarms(
+				existing.alarms && writableAlarms(existing.alarms),
+				reminderBefore,
+				summary ?? existing.summary
+			);
+			const customFields = nextCustomFields(
+				existing.customFields,
+				organizer,
+				attendees,
+				transparent
+			);
 
 			const updated = await client.updateEvent(calendarUrl, {
 				...existing,
-				...(existing.alarms && { alarms: writableAlarms(existing.alarms) }),
 				// Dates the caller doesn't pass are carried over; reshape them so the
 				// writer stores the same days. Explicit values below override these.
 				...(effectiveWholeDay && carryOverWholeDayDates(existing)),
@@ -140,13 +186,8 @@ export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 				...(recurrenceRule !== undefined && {
 					recurrenceRule: toRecurrenceRule(recurrenceRule, effectiveWholeDay),
 				}),
-				...((organizer !== undefined || attendees !== undefined) && {
-					customFields: mergeSchedulingFields(
-						existing.customFields,
-						organizer,
-						attendees
-					),
-				}),
+				...(alarms !== undefined && { alarms }),
+				...(customFields !== undefined && { customFields }),
 			});
 
 			return {

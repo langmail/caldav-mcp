@@ -162,7 +162,7 @@ Parameters:
 
 Returns:
 
-- A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email) and `attendees` (emails)
+- A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email), `attendees` (emails), `alarms` (each with `action` and `trigger`, e.g. `-PT30M`) and `transparent` (true when the event is marked free)
 
 ### create-event
 
@@ -183,9 +183,11 @@ Parameters:
   - `freq`: enum (`DAILY` | `WEEKLY` | `MONTHLY` | `YEARLY`) (optional)
   - `interval`: number (optional)
   - `until`: string (optional) — Last occurrence at or before this datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
+- `reminderBefore`: string (optional) — Display reminder before the event start, as ISO 8601 duration in weeks, days, hours, minutes or seconds (e.g. P3D, PT30M)
 - `start`: string — Start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
 - `attendees`: array of string (optional) — Attendee emails (no mailto:), written as ATTENDEE lines; a scheduling-capable server mails them the invitation. Requires organizer.
 - `summary`: string
+- `transparent`: boolean (optional) — Mark the event as free (true) or busy (false)
 - `wholeDay`: boolean (optional) — Create as a whole-day event
 
 Returns:
@@ -211,9 +213,11 @@ Parameters:
   - `freq`: enum (`DAILY` | `WEEKLY` | `MONTHLY` | `YEARLY`) (optional)
   - `interval`: number (optional)
   - `until`: string (optional) — Last occurrence at or before this datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
+- `reminderBefore`: string | null (optional) — Display reminder before the event start, as ISO 8601 duration in weeks, days, hours, minutes or seconds (e.g. P3D, PT30M). Replaces the event's existing display reminders; email and audio reminders are kept. Pass null to remove the display reminders.
 - `start`: string (optional) — New start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
 - `attendees`: array of string (optional) — The complete new attendee list (no mailto:): it replaces the stored one, so get the current attendees from list-events and include everyone who should stay. An empty list removes all attendees. Omit to leave them as stored. Requires an organizer.
 - `summary`: string (optional)
+- `transparent`: boolean | null (optional) — Mark the event as free (true) or busy (false). Pass null to clear the free/busy status.
 - `uid`: string — Unique identifier of the event to update (obtained from list-events)
 - `wholeDay`: boolean (optional) — Update whether this is a whole-day event
 
