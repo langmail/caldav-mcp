@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
+import { toWritableAlarms } from "./alarm-trigger.js";
 import { hrefFor, toCalendarPath } from "./caldav-href.js";
 import {
 	assertOrganizerForAttendees,
@@ -121,6 +122,7 @@ export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 
 			const updated = await client.updateEvent(calendarUrl, {
 				...existing,
+				...(existing.alarms && { alarms: toWritableAlarms(existing.alarms) }),
 				// Dates the caller doesn't pass are carried over; reshape them so the
 				// writer stores the same days. Explicit values below override these.
 				...(effectiveWholeDay && carryOverWholeDayDates(existing)),
