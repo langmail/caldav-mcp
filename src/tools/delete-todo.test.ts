@@ -1,0 +1,90 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CalDAVClient } from "ts-caldav";
+import { CalDAVError } from "ts-caldav";
+import { describe, expect, it, vi } from "vitest";
+import { registerDeleteTodo } from "./delete-todo.js";
+
+type ToolHandler = (params: {
+	uid: string;
+	calendarUrl: string;
+}) => Promise<{ content: { type: string; text: string }[] }>;
+
+function makeServer() {
+	let toolHandler: ToolHandler | null = null;
+	const server = new McpServer({ name: "test-server", version: "0.1.0" });
+	const originalRegisterTool = server.registerTool.bind(server);
+	server.registerTool = vi.fn(
+		(name: string, config: unknown, handler: ToolHandler) => {
+			if (name === "delete-todo") {
+				toolHandler = handler;
+			}
+			return originalRegisterTool(name, config, handler);
+		}
+	) as typeof server.registerTool;
+	return { getHandler: () => toolHandler, server };
+}
+
+describe("registerDeleteTodo", () => {
+	it("looks up the etag by href and deletes the todo", async () => {
+		const mockClient = {
+			deleteTodo: vi.fn().mockResolvedValue(undefined),
+			getETag: vi.fn().mockResolvedValue('"etag-1"'),
+		};
+		const { server, getHandler } = makeServer();
+		registerDeleteTodo(mockClient as unknown as CalDAVClient, server);
+		const handler = getHandler();
+		if (!handler) {
+			throw new Error("handler not registered");
+		}
+
+		const result = await handler({ calendarUrl: "/f/tasks", uid: "todo-123" });
+
+		expect(mockClient.getETag).toHaveBeenCalledWith("/f/tasks/todo-123.ics");
+		expect(mockClient.deleteTodo).toHaveBeenCalledWith(
+			"/f/tasks",
+			"todo-123",
+			'"etag-1"'
+		);
+		expect(result.content[0].text).toBe("Todo deleted");
+	});
+
+	it("translates a 404 into a friendly not-found error and skips the delete", async () => {
+		const mockClient = {
+			deleteTodo: vi.fn(),
+			getETag: vi
+				.fn()
+				.mockRejectedValue(new CalDAVError("Failed to retrieve ETag.", 404)),
+		};
+		const { server, getHandler } = makeServer();
+		registerDeleteTodo(mockClient as unknown as CalDAVClient, server);
+		const handler = getHandler();
+		if (!handler) {
+			throw new Error("handler not registered");
+		}
+
+		await expect(
+			handler({ calendarUrl: "/f/tasks", uid: "missing" })
+		).rejects.toThrow("Todo not found: missing");
+		expect(mockClient.deleteTodo).not.toHaveBeenCalled();
+	});
+
+	it("propagates a non-404 getETag failure unchanged", async () => {
+		const mockClient = {
+			deleteTodo: vi.fn(),
+			getETag: vi
+				.fn()
+				.mockRejectedValue(new CalDAVError("Server exploded.", 500)),
+		};
+		const { server, getHandler } = makeServer();
+		registerDeleteTodo(mockClient as unknown as CalDAVClient, server);
+		const handler = getHandler();
+		if (!handler) {
+			throw new Error("handler not registered");
+		}
+
+		await expect(
+			handler({ calendarUrl: "/f/tasks", uid: "missing" })
+		).rejects.toThrow("Server exploded.");
+		expect(mockClient.deleteTodo).not.toHaveBeenCalled();
+	});
+});

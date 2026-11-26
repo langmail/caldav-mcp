@@ -1,12 +1,19 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"extends": ["ultracite/biome/core", "ultracite/biome/vitest"],
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!!**/dist", "!!**/.github"]
+		"includes": [
+			"!!**/dist",
+			"!!**/.github",
+			"!CHANGELOG.md",
+			"!!**/.agents",
+			"!skills-lock.json"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -15,12 +22,17 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"preset": "recommended"
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
+		}
+	},
+	"json": {
+		"formatter": {
+			"indentStyle": "tab"
 		}
 	},
 	"assist": {

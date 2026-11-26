@@ -2,14 +2,14 @@
 	"manifest_version": "0.3",
 	"name": "caldav-mcp",
 	"display_name": "CalDAV Calendar",
-	"version": "0.8.0",
-	"description": "MCP server for CalDAV calendar operations — list calendars, list, create, update, and delete events.",
+	"version": "0.13.2",
+	"description": "MCP server for CalDAV calendar operations — list calendars, list, create, update, and delete events and todos.",
 	"author": {
 		"name": "Dominik Grusemann"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/dominik1001/caldav-mcp"
+		"url": "https://github.com/langmail/caldav-mcp"
 	},
 	"server": {
 		"type": "node",
@@ -59,6 +59,14 @@
 			"name": "update-event",
 			"description": "Update an existing calendar event"
 		},
-		{ "name": "delete-event", "description": "Delete a calendar event" }
+		{ "name": "delete-event", "description": "Delete a calendar event" },
+		{
+			"name": "list-todos",
+			"description": "List todos in a calendar"
+		},
+		{ "name": "create-todo", "description": "Create a new todo" },
+		{ "name": "update-todo", "description": "Update an existing todo" },
+		{ "name": "complete-todo", "description": "Mark a todo as completed" },
+		{ "name": "delete-todo", "description": "Delete a todo" }
 	]
 }

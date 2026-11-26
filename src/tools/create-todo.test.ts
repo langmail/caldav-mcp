@@ -1,0 +1,122 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CalDAVClient } from "ts-caldav";
+import { describe, expect, it, vi } from "vitest";
+import { registerCreateTodo } from "./create-todo.js";
+
+type ToolHandler = (params: {
+	summary: string;
+	calendarUrl: string;
+	due?: string;
+	start?: string;
+	description?: string;
+	location?: string;
+	reminderAt?: string;
+	status?: "NEEDS-ACTION" | "COMPLETED" | "IN-PROCESS" | "CANCELLED";
+}) => Promise<{ content: { type: string; text: string }[] }>;
+
+function makeServer() {
+	let toolHandler: ToolHandler | null = null;
+	const server = new McpServer({ name: "test-server", version: "0.1.0" });
+	const originalRegisterTool = server.registerTool.bind(server);
+	server.registerTool = vi.fn(
+		(name: string, config: unknown, handler: ToolHandler) => {
+			if (name === "create-todo") {
+				toolHandler = handler;
+			}
+			return originalRegisterTool(name, config, handler);
+		}
+	) as typeof server.registerTool;
+	return { getHandler: () => toolHandler, server };
+}
+
+function setup() {
+	const mockClient = {
+		createTodo: vi.fn().mockResolvedValue({ uid: "todo-123" }),
+	};
+	const { server, getHandler } = makeServer();
+	registerCreateTodo(mockClient as unknown as CalDAVClient, server);
+	const handler = getHandler();
+	if (!handler) {
+		throw new Error("handler not registered");
+	}
+	return { handler, mockClient };
+}
+
+describe("registerCreateTodo", () => {
+	it("converts due from ISO string to Date and returns the uid", async () => {
+		const { mockClient, handler } = setup();
+		const dueIso = "2026-07-01T09:00:00.000Z";
+
+		const result = await handler({
+			calendarUrl: "/f/tasks/",
+			due: dueIso,
+			summary: "Pay invoice",
+		});
+
+		expect(result.content[0].text).toBe("todo-123");
+		const passed = mockClient.createTodo.mock.calls[0]?.[1];
+		expect(passed?.summary).toBe("Pay invoice");
+		expect(passed?.due).toBeInstanceOf(Date);
+		expect(passed?.due?.toISOString()).toBe(dueIso);
+	});
+
+	it("omits optional fields when not provided", async () => {
+		const { mockClient, handler } = setup();
+
+		await handler({ calendarUrl: "/f/tasks/", summary: "Just a title" });
+
+		const passed = mockClient.createTodo.mock.calls[0]?.[1];
+		expect(passed).not.toHaveProperty("due");
+		expect(passed).not.toHaveProperty("start");
+		expect(passed).not.toHaveProperty("status");
+		expect(passed).not.toHaveProperty("description");
+		expect(passed).not.toHaveProperty("location");
+		expect(passed).not.toHaveProperty("alarms");
+	});
+
+	it("passes status when provided", async () => {
+		const { mockClient, handler } = setup();
+
+		await handler({
+			calendarUrl: "/f/tasks/",
+			status: "IN-PROCESS",
+			summary: "In progress task",
+		});
+
+		const passed = mockClient.createTodo.mock.calls[0]?.[1];
+		expect(passed?.status).toBe("IN-PROCESS");
+	});
+
+	it("adds one display alarm at reminderAt, described by the summary", async () => {
+		const { mockClient, handler } = setup();
+
+		await handler({
+			calendarUrl: "/f/tasks/",
+			reminderAt: "2026-11-27T09:00:00+01:00",
+			summary: "Call the plumber",
+		});
+
+		const passed = mockClient.createTodo.mock.calls[0]?.[1];
+		expect(passed?.alarms).toHaveLength(1);
+		expect(passed?.alarms[0]).toMatchObject({
+			action: "DISPLAY",
+			description: "Call the plumber",
+		});
+		expect(typeof passed?.alarms[0].trigger).not.toBe("string");
+		expect(String(passed?.alarms[0].trigger)).toBe("2026-11-27T08:00:00Z");
+	});
+
+	it("adds no alarm for a due date alone", async () => {
+		const { mockClient, handler } = setup();
+
+		await handler({
+			calendarUrl: "/f/tasks/",
+			due: "2026-11-27T17:00:00Z",
+			summary: "Call the plumber",
+		});
+
+		expect(mockClient.createTodo.mock.calls[0]?.[1]).not.toHaveProperty(
+			"alarms"
+		);
+	});
+});

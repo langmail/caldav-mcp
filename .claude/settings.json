@@ -1,0 +1,26 @@
+{
+	"enabledPlugins": {
+		"high-signal-researcher@unvibe-org": true
+	},
+	"extraKnownMarketplaces": {
+		"unvibe-org": {
+			"source": {
+				"source": "github",
+				"repo": "unvibe-org/skills"
+			}
+		}
+	},
+	"hooks": {
+		"PostToolUse": [
+			{
+				"hooks": [
+					{
+						"command": "npx ultracite fix --skip=correctness/noUnusedImports --hook",
+						"type": "command"
+					}
+				],
+				"matcher": "Write|Edit"
+			}
+		]
+	}
+}

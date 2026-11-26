@@ -1,19 +1,16 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
+import { toAbsoluteUrl } from "./caldav-href.js";
 
 export const listCalendarsDefinition = {
-	name: "list-calendars",
-	description: "List all calendars returning both name and URL",
+	description:
+		"List all calendars returning both name and absolute URL. Pass a calendar's `url` unchanged as `calendarUrl` to the other tools.",
 	inputSchema: {},
+	name: "list-calendars",
 	returns: "List of all available calendars",
 } as const;
 
-export async function registerListCalendars(
-	client: CalDAVClient,
-	server: McpServer,
-) {
-	const calendars = await client.getCalendars();
-
+export function registerListCalendars(client: CalDAVClient, server: McpServer) {
 	server.registerTool(
 		listCalendarsDefinition.name,
 		{
@@ -21,7 +18,15 @@ export async function registerListCalendars(
 			inputSchema: listCalendarsDefinition.inputSchema,
 		},
 		async () => {
-			return { content: [{ type: "text", text: JSON.stringify(calendars) }] };
-		},
+			// ts-caldav returns server-relative hrefs; resolve them so agents don't
+			// have to guess how to prefix the base URL.
+			const calendars = (await client.getCalendars()).map((calendar) => ({
+				...calendar,
+				url: toAbsoluteUrl(calendar.url, client.baseUrl),
+			}));
+			return {
+				content: [{ text: JSON.stringify(calendars), type: "text" }],
+			};
+		}
 	);
 }
