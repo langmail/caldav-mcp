@@ -7,10 +7,13 @@ import {
 	emailAddressSchema,
 	toCalAddress,
 } from "./calendar-address.js";
-import { isoDateTime } from "./iso-datetime.js";
 import type { RecurrenceRuleInput } from "./recurrence-rule.js";
 import { recurrenceRuleSchema, toRecurrenceRule } from "./recurrence-rule.js";
-import { toWholeDayDate } from "./whole-day-date.js";
+import {
+	eventEndSchema,
+	eventStartSchema,
+	toEventDate,
+} from "./whole-day-date.js";
 
 interface CreateEventInput {
 	attendees?: string[] | undefined;
@@ -31,7 +34,7 @@ export const createEventDefinition = {
 	inputSchema: {
 		calendarUrl: z.string(),
 		description: z.string().optional(),
-		end: isoDateTime("End datetime"),
+		end: eventEndSchema,
 		location: z.string().optional(),
 		organizer: emailAddressSchema
 			.optional()
@@ -39,7 +42,7 @@ export const createEventDefinition = {
 				"Organizer email (no mailto:), written as ORGANIZER; a scheduling-capable server (e.g. Radicale with the email/iMIP hook) uses it to send invitations, updates and cancellations to the attendees."
 			),
 		recurrenceRule: recurrenceRuleSchema.optional(),
-		start: isoDateTime("Start datetime"),
+		start: eventStartSchema,
 		attendees: z
 			.array(emailAddressSchema)
 			.optional()
@@ -84,8 +87,8 @@ export function registerCreateEvent(client: CalDAVClient, server: McpServer) {
 				customFields.attendee = attendees.map(toCalAddress);
 			}
 			const event = await client.createEvent(calendarUrl, {
-				end: wholeDay ? toWholeDayDate(end) : new Date(end),
-				start: wholeDay ? toWholeDayDate(start) : new Date(start),
+				end: toEventDate(end, wholeDay),
+				start: toEventDate(start, wholeDay),
 				summary,
 				...(wholeDay !== undefined && { wholeDay }),
 				...(description !== undefined && { description }),

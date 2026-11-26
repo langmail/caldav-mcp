@@ -1,4 +1,5 @@
 import type { Event } from "ts-caldav";
+import { z } from "zod";
 
 // ts-caldav and ical.js disagree about how a whole-day (`VALUE=DATE`) value is
 // represented as a `Date`. ts-caldav writes each date it stores (DTSTART,
@@ -92,4 +93,65 @@ export function carryOverWholeDayDates(existing: Event): Partial<Event> {
 		carried.recurrenceId = localDayToWholeDayDate(existing.recurrenceId);
 	}
 	return carried;
+}
+
+const isoDateTime = z.iso.datetime({ offset: true });
+const isoDate = z.iso.date();
+
+const eventDateSchema = z
+	.string()
+	.refine(
+		(value) =>
+			isoDateTime.safeParse(value).success || isoDate.safeParse(value).success,
+		{
+			message:
+				"Invalid datetime, expected ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00, or a plain date (YYYY-MM-DD) for a whole-day event",
+		}
+	);
+
+export const eventStartSchema = eventDateSchema.describe(
+	"Start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z). A whole-day event also accepts a plain date (YYYY-MM-DD)."
+);
+
+export const eventEndSchema = eventDateSchema.describe(
+	"End datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z). A whole-day event also accepts a plain date (YYYY-MM-DD), which is the last day the event covers (inclusive)."
+);
+
+/**
+ * Parses a `start` or `end` argument. A plain `YYYY-MM-DD`, which is what
+ * list-events reports for a whole-day event, is only valid for a whole-day
+ * event: for a timed one it would silently mean midnight UTC.
+ */
+export function toEventDate(
+	value: string,
+	wholeDay: boolean | undefined
+): Date {
+	if (wholeDay) {
+		return toWholeDayDate(value);
+	}
+	if (isoDate.safeParse(value).success) {
+		throw new Error(
+			`"${value}" is a plain date, which is only valid for a whole-day event. Pass a full ISO 8601 datetime, or set wholeDay to true.`
+		);
+	}
+	return new Date(value);
+}
+
+/**
+ * The calendar dates a whole-day event covers, as list-events reports them.
+ *
+ * ical.js hands a `VALUE=DATE` back as local midnight, which serialises to the
+ * previous day east of UTC. Reading the local calendar fields gives the date
+ * the server stored. DTEND is exclusive, so the day before it is the last day
+ * the event covers, which is also what create-event and update-event take as
+ * `end`.
+ */
+export function wholeDaySpan(event: Event) {
+	const end = event.end as Date | undefined;
+	const first = localDayToWholeDayDate(event.start);
+	const last = end ? inclusiveEndToWholeDayDate(end, event.start) : first;
+	return {
+		end: last.toISOString().slice(0, 10),
+		start: first.toISOString().slice(0, 10),
+	};
 }

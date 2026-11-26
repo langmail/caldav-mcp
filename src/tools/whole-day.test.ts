@@ -108,8 +108,6 @@ const trip: Stored = {
 	uid: "trip-1",
 };
 
-// The `test.fails` cases are known bugs (see PR #100's review). Each one
-// flips to a failure once its bug is fixed; then drop `.fails`.
 describe("whole-day events through the MCP client", () => {
 	it("create-event stores the day named in a UTC date", async () => {
 		const { client, events } = fakeCalendar();
@@ -165,7 +163,7 @@ describe("whole-day events through the MCP client", () => {
 		});
 	});
 
-	it.fails("dates from list-events can be passed back to update-event as they are", async () => {
+	it("dates from list-events can be passed back to update-event as they are", async () => {
 		const { client, events } = fakeCalendar([trip]);
 		const mcp = await connect(client);
 
@@ -191,7 +189,7 @@ describe("whole-day events through the MCP client", () => {
 		});
 	});
 
-	it.fails("the list-events description the client sees explains whole-day dates", async () => {
+	it("the list-events description the client sees explains whole-day dates", async () => {
 		const { client } = fakeCalendar();
 		const mcp = await connect(client);
 

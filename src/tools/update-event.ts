@@ -9,11 +9,15 @@ import {
 	readScheduling,
 	toCalAddress,
 } from "./calendar-address.js";
-import { isoDateTime } from "./iso-datetime.js";
 import type { RecurrenceRuleInput } from "./recurrence-rule.js";
 import { recurrenceRuleSchema, toRecurrenceRule } from "./recurrence-rule.js";
 import { writableAlarms } from "./reminder.js";
-import { carryOverWholeDayDates, toWholeDayDate } from "./whole-day-date.js";
+import {
+	carryOverWholeDayDates,
+	eventEndSchema,
+	eventStartSchema,
+	toEventDate,
+} from "./whole-day-date.js";
 
 interface UpdateEventInput {
 	attendees?: string[] | undefined;
@@ -35,7 +39,7 @@ export const updateEventDefinition = {
 	inputSchema: {
 		calendarUrl: z.string(),
 		description: z.string().optional(),
-		end: isoDateTime("New end datetime").optional(),
+		end: eventEndSchema.optional(),
 		location: z.string().optional(),
 		organizer: emailAddressOrEmptySchema
 			.optional()
@@ -43,7 +47,7 @@ export const updateEventDefinition = {
 				"Organizer email (no mailto:); pass to set or change ORGANIZER, or an empty string to remove it (only when the event has no attendees). Omit to leave it as stored."
 			),
 		recurrenceRule: recurrenceRuleSchema.optional(),
-		start: isoDateTime("New start datetime").optional(),
+		start: eventStartSchema.optional(),
 		attendees: z
 			.array(emailAddressSchema)
 			.optional()
@@ -129,10 +133,10 @@ export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 				...(effectiveWholeDay && carryOverWholeDayDates(existing)),
 				...(summary !== undefined && { summary }),
 				...(start !== undefined && {
-					start: effectiveWholeDay ? toWholeDayDate(start) : new Date(start),
+					start: toEventDate(start, effectiveWholeDay),
 				}),
 				...(end !== undefined && {
-					end: effectiveWholeDay ? toWholeDayDate(end) : new Date(end),
+					end: toEventDate(end, effectiveWholeDay),
 				}),
 				...(wholeDay !== undefined && { wholeDay }),
 				...(description !== undefined && { description }),

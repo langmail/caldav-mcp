@@ -152,7 +152,7 @@ Returns:
 
 ### list-events
 
-List all events between start and end date in the calendar specified by its URL
+List all events between start and end date in the calendar specified by its URL. A whole-day event has `wholeDay: true` and plain calendar dates (`YYYY-MM-DD`) as `start` and `end`; `end` is the last day the event covers (inclusive, not the exclusive iCalendar DTEND). These dates can be passed to create-event and update-event as they are, together with `wholeDay: true`. Every other event has ISO 8601 instants.
 
 Parameters:
 
@@ -162,7 +162,7 @@ Parameters:
 
 Returns:
 
-- A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email) and `attendees` (emails)
+- A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email) and `attendees` (emails). A whole-day event also carries `wholeDay: true`, and its `start` and `end` are plain calendar dates (`YYYY-MM-DD`) with `end` being the last day covered.
 
 ### create-event
 
@@ -172,7 +172,7 @@ Parameters:
 
 - `calendarUrl`: string
 - `description`: string (optional)
-- `end`: string — End datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
+- `end`: string — End datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z). A whole-day event also accepts a plain date (YYYY-MM-DD), which is the last day the event covers (inclusive).
 - `location`: string (optional)
 - `organizer`: string (optional) — Organizer email (no mailto:), written as ORGANIZER; a scheduling-capable server (e.g. Radicale with the email/iMIP hook) uses it to send invitations, updates and cancellations to the attendees.
 - `recurrenceRule`: object (optional)
@@ -183,7 +183,7 @@ Parameters:
   - `freq`: enum (`DAILY` | `WEEKLY` | `MONTHLY` | `YEARLY`) (optional)
   - `interval`: number (optional)
   - `until`: string (optional) — Last occurrence at or before this datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
-- `start`: string — Start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
+- `start`: string — Start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z). A whole-day event also accepts a plain date (YYYY-MM-DD).
 - `attendees`: array of string (optional) — Attendee emails (no mailto:), written as ATTENDEE lines; a scheduling-capable server mails them the invitation. Requires organizer.
 - `summary`: string
 - `wholeDay`: boolean (optional) — Create as a whole-day event
@@ -200,7 +200,7 @@ Parameters:
 
 - `calendarUrl`: string
 - `description`: string (optional)
-- `end`: string (optional) — New end datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
+- `end`: string (optional) — End datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z). A whole-day event also accepts a plain date (YYYY-MM-DD), which is the last day the event covers (inclusive).
 - `location`: string (optional)
 - `organizer`: string (optional) — Organizer email (no mailto:); pass to set or change ORGANIZER, or an empty string to remove it (only when the event has no attendees). Omit to leave it as stored.
 - `recurrenceRule`: object (optional)
@@ -211,7 +211,7 @@ Parameters:
   - `freq`: enum (`DAILY` | `WEEKLY` | `MONTHLY` | `YEARLY`) (optional)
   - `interval`: number (optional)
   - `until`: string (optional) — Last occurrence at or before this datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
-- `start`: string (optional) — New start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z)
+- `start`: string (optional) — Start datetime (ISO 8601 with an offset, e.g. 2026-05-01T09:00:00+02:00 or 2026-05-01T07:00:00Z). A whole-day event also accepts a plain date (YYYY-MM-DD).
 - `attendees`: array of string (optional) — The complete new attendee list (no mailto:): it replaces the stored one, so get the current attendees from list-events and include everyone who should stay. An empty list removes all attendees. Omit to leave them as stored. Requires an organizer.
 - `summary`: string (optional)
 - `uid`: string — Unique identifier of the event to update (obtained from list-events)
