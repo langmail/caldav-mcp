@@ -21,8 +21,6 @@ const server = process.env.SMOKE_SERVER ?? "dist/index.js";
 const single = process.env.SMOKE_SINGLE === "1";
 
 interface ListedCalendar {
-	account?: string;
-	supportedComponents?: string[];
 	url: string;
 }
 
@@ -34,13 +32,13 @@ function env(name: string): string {
 	return value;
 }
 
-function serverEnv(): Record<string, string> {
+function serverEnv(singleAccount: boolean): Record<string, string> {
 	const second = {
 		BASE_URL: env("SMOKE_SECOND_BASE_URL"),
 		PASSWORD: env("SMOKE_SECOND_PASSWORD"),
 		USERNAME: env("SMOKE_SECOND_USERNAME"),
 	};
-	const accounts: Record<string, string> = single
+	const accounts: Record<string, string> = singleAccount
 		? {
 				CALDAV_BASE_URL: second.BASE_URL,
 				CALDAV_PASSWORD: second.PASSWORD,
@@ -83,36 +81,44 @@ async function main() {
 		);
 		return;
 	}
-	const childEnv = serverEnv();
+	const testedEnv = serverEnv(single);
 	const mcpConfig = JSON.stringify({
 		mcpServers: {
-			caldav: { args: [server], command: "node", env: childEnv, type: "stdio" },
+			caldav: {
+				args: [server],
+				command: "node",
+				env: testedEnv,
+				type: "stdio",
+			},
 		},
 	});
 	const failures: string[] = [];
 	const created: Array<{ calendarUrl: string; uid: string }> = [];
 	const summary = `caldav-mcp smoke accounts ${randomUUID().slice(0, 8)}`;
 
-	const client = new Client({ name: "smoke-agent-accounts", version: "0" });
-	await client.connect(
-		new StdioClientTransport({
-			args: [server],
-			command: "node",
-			env: childEnv,
-			stderr: "inherit",
-		})
-	);
+	const connect = async (childEnv: Record<string, string>) => {
+		const c = new Client({ name: "smoke-agent-accounts", version: "0" });
+		await c.connect(
+			new StdioClientTransport({
+				args: [server],
+				command: "node",
+				env: childEnv,
+				stderr: "inherit",
+			})
+		);
+		return c;
+	};
+	const client = await connect(testedEnv);
+	// Sees only the second account, through the plain variables, so where the
+	// event landed is not judged by the multi-account code under test.
+	const family = await connect(serverEnv(true));
 
 	let calls: string[] = [];
 	try {
 		const calendars = JSON.parse(
-			textOf(await client.callTool({ arguments: {}, name: "list-calendars" }))
+			textOf(await family.callTool({ arguments: {}, name: "list-calendars" }))
 		) as ListedCalendar[];
-		const familyUrls = new Set(
-			calendars
-				.filter((c) => single || c.account === "family")
-				.map((c) => c.url)
-		);
+		const familyUrls = new Set(calendars.map((c) => c.url));
 
 		const turn = ask(
 			`Put a 30-minute event called "${summary}" on tomorrow at 10:00 in the first calendar of my family account, then list that calendar's events for tomorrow to confirm it is there.`,
@@ -142,7 +148,7 @@ async function main() {
 		} else if (familyUrls.has(event.calendarUrl)) {
 			const stored = JSON.parse(
 				textOf(
-					await client.callTool({
+					await family.callTool({
 						arguments: {
 							calendarUrl: event.calendarUrl,
 							end: tomorrowAt(23).toISOString(),
@@ -175,7 +181,7 @@ async function main() {
 				client.callTool({ arguments: arguments_, name: "delete-event" })
 			)
 		);
-		await client.close();
+		await Promise.all([client.close(), family.close()]);
 	}
 
 	for (const f of failures) {

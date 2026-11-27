@@ -34,9 +34,13 @@ export class Accounts {
 		this.#accounts = accounts;
 	}
 
-	/** Every account's calendars with absolute URLs, tagged with `account` when there are several. */
+	/**
+	 * Every account's calendars with absolute URLs, tagged with `account` when
+	 * there are several, and the accounts that could not be listed. One
+	 * unreachable account doesn't hide the others; all of them failing throws.
+	 */
 	async listCalendars() {
-		const lists = await Promise.all(
+		const results = await Promise.allSettled(
 			this.#accounts.map(async (account) => {
 				const calendars = (await account.client.getCalendars()).map(
 					(calendar) => ({
@@ -56,7 +60,25 @@ export class Accounts {
 					: calendars;
 			})
 		);
-		return lists.flat();
+		const calendars = results.flatMap((result) =>
+			result.status === "fulfilled" ? result.value : []
+		);
+		const failures = results.flatMap((result, i) =>
+			result.status === "rejected"
+				? [{ account: this.#accounts[i]?.name, error: result.reason }]
+				: []
+		);
+		const [first] = failures;
+		if (first && failures.length === results.length) {
+			throw first.error;
+		}
+		return {
+			calendars,
+			failures: failures.map(
+				({ account, error }) =>
+					`Could not list the calendars of account ${account}: ${error instanceof Error ? error.message : String(error)}`
+			),
+		};
 	}
 
 	async forCalendar(calendarUrl: string): Promise<CalendarTarget> {
@@ -90,8 +112,9 @@ export class Accounts {
 		);
 	}
 
+	/** Keeps an account's last known calendars when it doesn't answer. */
 	async #refresh() {
-		await Promise.all(
+		await Promise.allSettled(
 			this.#accounts.map(async (account) => {
 				const calendars = await account.client.getCalendars();
 				this.#remember(

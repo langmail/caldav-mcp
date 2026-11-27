@@ -7,7 +7,7 @@ export const listCalendarsDefinition = {
 	inputSchema: {},
 	name: "list-calendars",
 	returns:
-		"List of all available calendars. When the server has several CalDAV accounts configured, each calendar also has `account`, the name of the account it belongs to",
+		"List of all available calendars. When the server has several CalDAV accounts configured, each calendar also has `account`, the name of the account it belongs to, and an account that could not be reached is named in a second text item",
 } as const;
 
 export function registerListCalendars(accounts: Accounts, server: McpServer) {
@@ -20,9 +20,12 @@ export function registerListCalendars(accounts: Accounts, server: McpServer) {
 		async () => {
 			// ts-caldav returns server-relative hrefs; Accounts resolves them so
 			// agents don't have to guess how to prefix the base URL.
-			const calendars = await accounts.listCalendars();
+			const { calendars, failures } = await accounts.listCalendars();
 			return {
-				content: [{ text: JSON.stringify(calendars), type: "text" }],
+				content: [
+					{ text: JSON.stringify(calendars), type: "text" as const },
+					...failures.map((text) => ({ text, type: "text" as const })),
+				],
 			};
 		}
 	);

@@ -167,7 +167,7 @@ Parameters: none
 
 Returns:
 
-- List of all available calendars. When the server has several CalDAV accounts configured, each calendar also has `account`, the name of the account it belongs to
+- List of all available calendars. When the server has several CalDAV accounts configured, each calendar also has `account`, the name of the account it belongs to, and an account that could not be reached is named in a second text item
 
 ### list-events
 
