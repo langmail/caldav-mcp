@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerCompleteTodo } from "./complete-todo.js";
 import { registerCreateEvent } from "./create-event.js";
 import { registerCreateTodo } from "./create-todo.js";
@@ -71,7 +72,10 @@ async function callsFor(
 			handler = h;
 		},
 	};
-	register(client as unknown as CalDAVClient, server as unknown as McpServer);
+	register(
+		singleAccount(client as unknown as CalDAVClient),
+		server as unknown as McpServer
+	);
 	if (!handler) {
 		throw new Error("tool was not registered");
 	}

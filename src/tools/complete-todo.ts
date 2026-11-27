@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { hrefFor, toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
+import { hrefFor } from "./caldav-href.js";
 import { writableAlarms } from "./reminder.js";
 
 interface CompleteTodoInput {
@@ -22,7 +22,7 @@ export const completeTodoDefinition = {
 	returns: "The unique ID of the completed todo",
 } as const;
 
-export function registerCompleteTodo(client: CalDAVClient, server: McpServer) {
+export function registerCompleteTodo(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		completeTodoDefinition.name,
 		{
@@ -31,7 +31,9 @@ export function registerCompleteTodo(client: CalDAVClient, server: McpServer) {
 		},
 		async (args: CompleteTodoInput) => {
 			const { uid } = args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 			const href = hrefFor(calendarUrl, uid);
 			const [existing] = await client.getTodosByHref(calendarUrl, [href]);
 			if (!existing) {

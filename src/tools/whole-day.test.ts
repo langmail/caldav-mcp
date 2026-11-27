@@ -3,6 +3,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient, Event } from "ts-caldav";
 import { describe, expect, it } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerCreateEvent } from "./create-event.js";
 import { registerListEvents } from "./list-events.js";
 import { registerUpdateEvent } from "./update-event.js";
@@ -80,10 +81,11 @@ function fakeCalendar(initial: Stored[] = []) {
 }
 
 async function connect(client: CalDAVClient) {
+	const accounts = singleAccount(client);
 	const server = new McpServer({ name: "test-server", version: "0.1.0" });
-	registerCreateEvent(client, server);
-	registerListEvents(client, server);
-	registerUpdateEvent(client, server);
+	registerCreateEvent(accounts, server);
+	registerListEvents(accounts, server);
+	registerUpdateEvent(accounts, server);
 	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
 	await server.connect(serverSide);
 	const mcp = new Client({ name: "test-client", version: "0.1.0" });

@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerListEvents } from "./list-events.js";
 
 type ToolHandler = (params: {
@@ -48,7 +49,7 @@ describe("registerListEvents", () => {
 		) as typeof server.registerTool;
 
 		// Register the tool
-		registerListEvents(mockClient as CalDAVClient, server);
+		registerListEvents(singleAccount(mockClient as CalDAVClient), server);
 
 		// Verify handler was captured
 		expect(toolHandler).toBeDefined();
@@ -103,7 +104,7 @@ describe("registerListEvents", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerListEvents(mockClient as CalDAVClient, server);
+		registerListEvents(singleAccount(mockClient as CalDAVClient), server);
 		expect(toolHandler).toBeDefined();
 
 		const result = await toolHandler({
@@ -155,7 +156,7 @@ describe("registerListEvents", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerListEvents(mockClient as CalDAVClient, server);
+		registerListEvents(singleAccount(mockClient as CalDAVClient), server);
 		expect(toolHandler).toBeDefined();
 
 		const result = await toolHandler({
@@ -208,7 +209,10 @@ describe("registerListEvents", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerListEvents(mockClient as unknown as CalDAVClient, server);
+		registerListEvents(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		if (!toolHandler) {
 			throw new Error("handler not registered");
 		}
@@ -264,7 +268,7 @@ describe("registerListEvents", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerListEvents(mockClient as CalDAVClient, server);
+		registerListEvents(singleAccount(mockClient as CalDAVClient), server);
 		expect(toolHandler).toBeDefined();
 
 		const result = await toolHandler({

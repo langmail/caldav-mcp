@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient, Todo } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import {
 	compareTodos,
 	listTodosDefinition,
@@ -41,7 +42,10 @@ function makeServer() {
 function setup(todos: Todo[]) {
 	const mockClient = { getTodos: vi.fn().mockResolvedValue(todos) };
 	const { server, getHandler } = makeServer();
-	registerListTodos(mockClient as unknown as CalDAVClient, server);
+	registerListTodos(
+		singleAccount(mockClient as unknown as CalDAVClient),
+		server
+	);
 	const handler = getHandler();
 	if (!handler) {
 		throw new Error("handler not registered");

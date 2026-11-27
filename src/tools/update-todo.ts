@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { hrefFor, toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
+import { hrefFor } from "./caldav-href.js";
 import { isoDateTime } from "./iso-datetime.js";
 import { updatedAlarms } from "./reminder.js";
 import type { TodoStatus } from "./todo-status.js";
@@ -48,7 +48,7 @@ export const updateTodoDefinition = {
 	returns: "The unique ID of the updated todo",
 } as const;
 
-export function registerUpdateTodo(client: CalDAVClient, server: McpServer) {
+export function registerUpdateTodo(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		updateTodoDefinition.name,
 		{
@@ -66,7 +66,9 @@ export function registerUpdateTodo(client: CalDAVClient, server: McpServer) {
 				reminderAt,
 				status,
 			} = args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 
 			const href = hrefFor(calendarUrl, uid);
 			const [existing] = await client.getTodosByHref(calendarUrl, [href]);

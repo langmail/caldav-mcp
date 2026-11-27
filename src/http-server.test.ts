@@ -7,6 +7,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { singleAccount } from "./accounts.js";
 import { startHttpServer } from "./http-server.js";
 import { createServer } from "./server.js";
 
@@ -52,7 +53,7 @@ const caldav = {
 
 async function start(
 	authToken: string | undefined,
-	factory: () => McpServer = () => createServer(caldav)
+	factory: () => McpServer = () => createServer(singleAccount(caldav))
 ) {
 	const server = await startHttpServer(
 		{ authToken, host: "127.0.0.1", port: 0 },

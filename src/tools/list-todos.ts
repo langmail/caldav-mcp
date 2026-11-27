@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient, Todo } from "ts-caldav";
+import type { Todo } from "ts-caldav";
 import { z } from "zod";
-import { toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
 import { isoDateTime } from "./iso-datetime.js";
 import { reminderTimes } from "./reminder.js";
 import type { TodoStatus } from "./todo-status.js";
@@ -89,7 +89,7 @@ export const listTodosDefinition = {
 		"An object `{ todos, total, limit, offset }` where `total` is the count before pagination. Each todo has `uid`, `summary`, `status`, `reminders` (when the task will notify, as ISO datetimes, or as the raw offset such as `-PT15M` for a relative reminder on a task without `start`; empty when it has none), and optionally `due`, `start`, `completed`, `description`, `location`.",
 } as const;
 
-export function registerListTodos(client: CalDAVClient, server: McpServer) {
+export function registerListTodos(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		listTodosDefinition.name,
 		{
@@ -97,7 +97,9 @@ export function registerListTodos(client: CalDAVClient, server: McpServer) {
 			inputSchema: listTodosDefinition.inputSchema,
 		},
 		async (args: ListTodosInput) => {
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 			const status = args.status ?? "OPEN";
 			const limit = args.limit ?? 50;
 			const offset = args.offset ?? 0;

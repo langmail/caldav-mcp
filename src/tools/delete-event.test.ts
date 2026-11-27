@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerDeleteEvent } from "./delete-event.js";
 
 type ToolHandler = (params: {
@@ -31,7 +32,10 @@ describe("registerDeleteEvent", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerDeleteEvent(mockClient as unknown as CalDAVClient, server);
+		registerDeleteEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 
 		expect(toolHandler).toBeDefined();
 
@@ -73,7 +77,10 @@ describe("registerDeleteEvent", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerDeleteEvent(mockClient as unknown as CalDAVClient, server);
+		registerDeleteEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 
 		await toolHandler({
 			calendarUrl: "/cal/work/",
@@ -118,7 +125,10 @@ describe("registerDeleteEvent", () => {
 			}
 		) as typeof server.registerTool;
 
-		registerDeleteEvent(mockClient as unknown as CalDAVClient, server);
+		registerDeleteEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 
 		expect(toolHandler).toBeDefined();
 

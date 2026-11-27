@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import {
 	listCalendarsDefinition,
 	registerListCalendars,
@@ -29,7 +30,7 @@ function register(baseUrl: string, urls: string[]) {
 	};
 
 	registerListCalendars(
-		mockClient as unknown as CalDAVClient,
+		singleAccount(mockClient as unknown as CalDAVClient),
 		server as unknown as McpServer
 	);
 	if (!handler) {

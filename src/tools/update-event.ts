@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { hrefFor, toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
+import { hrefFor } from "./caldav-href.js";
 import {
 	assertOrganizerForAttendees,
 	emailAddressOrEmptySchema,
@@ -124,7 +124,7 @@ function nextCustomFields(
 	return updatedCustomFields(scheduled, transparent) ?? scheduled;
 }
 
-export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
+export function registerUpdateEvent(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		updateEventDefinition.name,
 		{
@@ -146,7 +146,9 @@ export function registerUpdateEvent(client: CalDAVClient, server: McpServer) {
 				organizer,
 				attendees,
 			} = args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 
 			const href = hrefFor(calendarUrl, uid);
 

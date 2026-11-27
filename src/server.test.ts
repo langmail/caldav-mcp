@@ -2,6 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { CalDAVClient } from "ts-caldav";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { singleAccount } from "./accounts.js";
 import { createServer } from "./server.js";
 
 const findKey = (node: unknown, key: string, path = "$"): string[] => {
@@ -24,7 +25,7 @@ describe("createServer", () => {
 		} as unknown as CalDAVClient;
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
-		await createServer(client).connect(serverTransport);
+		await createServer(singleAccount(client)).connect(serverTransport);
 		mcpClient = new Client({ name: "test", version: "0.0.0" });
 		await mcpClient.connect(clientTransport);
 	});

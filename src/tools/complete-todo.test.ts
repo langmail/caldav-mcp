@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient, Todo } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerCompleteTodo } from "./complete-todo.js";
 
 type ToolHandler = (params: {
@@ -43,7 +44,10 @@ describe("registerCompleteTodo", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerCompleteTodo(mockClient as unknown as CalDAVClient, server);
+		registerCompleteTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -64,7 +68,10 @@ describe("registerCompleteTodo", () => {
 			updateTodo: vi.fn(),
 		};
 		const { server, getHandler } = makeServer();
-		registerCompleteTodo(mockClient as unknown as CalDAVClient, server);
+		registerCompleteTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -87,7 +94,10 @@ describe("registerCompleteTodo", () => {
 			updateTodo: vi.fn().mockResolvedValue({ uid: "todo-123" }),
 		};
 		const { server, getHandler } = makeServer();
-		registerCompleteTodo(mockClient as unknown as CalDAVClient, server);
+		registerCompleteTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
