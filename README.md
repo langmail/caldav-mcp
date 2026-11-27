@@ -67,7 +67,7 @@ CALDAV_FAMILY_PASSWORD=...
 
 - An account name uses only letters, digits and `_`. The server refuses to start when a variable of a named account is missing, and names it.
 - When `CALDAV_ACCOUNTS` is set, the plain `CALDAV_BASE_URL`, `CALDAV_USERNAME` and `CALDAV_PASSWORD` are ignored.
-- `list-calendars` lists the calendars of every account, each with an `account` field naming its account. The other tools take a calendar URL as before and use the account whose calendars include it. A calendar that several accounts can see goes to the first of them in `CALDAV_ACCOUNTS`.
+- `list-calendars` lists the calendars of every account. When several accounts are configured, each calendar has an `account` field naming its account. The other tools take a calendar URL as before and use the account whose calendars include it. A calendar that several accounts can see goes to the first of them in `CALDAV_ACCOUNTS`.
 - Everyone who can use the server, over HTTP everyone with its token, can read and change the calendars of every configured account.
 
 ## Development
