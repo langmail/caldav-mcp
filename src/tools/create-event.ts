@@ -1,7 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
 import {
 	assertOrganizerForAttendees,
 	emailAddressSchema,
@@ -69,7 +68,7 @@ export const createEventDefinition = {
 	returns: "The unique ID of the created event",
 } as const;
 
-export function registerCreateEvent(client: CalDAVClient, server: McpServer) {
+export function registerCreateEvent(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		createEventDefinition.name,
 		{
@@ -90,7 +89,9 @@ export function registerCreateEvent(client: CalDAVClient, server: McpServer) {
 				organizer,
 				attendees,
 			} = args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 			assertOrganizerForAttendees(organizer, attendees ?? []);
 			// organizer/attendees and TRANSP go through ts-caldav's customFields,
 			// which it writes as plain ICS properties.

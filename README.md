@@ -51,6 +51,25 @@ Using caldav-mcp? [Tell us how in three minutes](https://tally.so/r/GepQM2?sourc
 }
 ```
 
+### Several accounts
+
+One server can serve calendars from several CalDAV accounts or servers, over stdio or `--http`. Name the accounts in `CALDAV_ACCOUNTS`, and give each one its own URL and credentials in `CALDAV_<NAME>_BASE_URL`, `CALDAV_<NAME>_USERNAME` and `CALDAV_<NAME>_PASSWORD`, with the name in upper case:
+
+```bash
+CALDAV_ACCOUNTS=personal,family
+CALDAV_PERSONAL_BASE_URL=https://cal.example.com/dav
+CALDAV_PERSONAL_USERNAME=alex
+CALDAV_PERSONAL_PASSWORD=...
+CALDAV_FAMILY_BASE_URL=https://family.example.org/dav
+CALDAV_FAMILY_USERNAME=household
+CALDAV_FAMILY_PASSWORD=...
+```
+
+- An account name uses only letters, digits and `_`. The server refuses to start when a variable of a named account is missing, and names it.
+- When `CALDAV_ACCOUNTS` is set, the plain `CALDAV_BASE_URL`, `CALDAV_USERNAME` and `CALDAV_PASSWORD` are ignored.
+- `list-calendars` lists the calendars of every account, each with an `account` field naming its account. The other tools take a calendar URL as before and use the account whose calendars include it. A calendar that several accounts can see goes to the first of them in `CALDAV_ACCOUNTS`.
+- Everyone who can use the server, over HTTP everyone with its token, can read and change the calendars of every configured account.
+
 ## Development
 
 ### Quick Start
@@ -113,7 +132,7 @@ The server supports two transports, selected at startup:
   ```
 
   Security notes:
-  - One server process serves one CalDAV account. Anyone with the token can read and change that calendar.
+  - Anyone with the token can read and change the calendars of every configured CalDAV account (see [Several accounts](#several-accounts)).
   - The server speaks plain HTTP. For remote access, put it behind a reverse proxy that terminates TLS.
   - Requests with an `Origin` header are rejected and there is no CORS support, so browser-based clients can't connect directly.
   - When bound to loopback, only `localhost`/`127.0.0.1`/`[::1]` Host headers are accepted, which blocks DNS rebinding.
@@ -148,7 +167,7 @@ Parameters: none
 
 Returns:
 
-- List of all available calendars
+- List of all available calendars. When the server has several CalDAV accounts configured, each calendar also has `account`, the name of the account it belongs to, and an account that could not be reached is named in a second text item
 
 ### list-events
 

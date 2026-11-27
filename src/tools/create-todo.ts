@@ -1,7 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
 import { isoDateTime } from "./iso-datetime.js";
 import { reminderAlarm } from "./reminder.js";
 import type { TodoStatus } from "./todo-status.js";
@@ -39,7 +38,7 @@ export const createTodoDefinition = {
 	returns: "The unique ID of the created todo",
 } as const;
 
-export function registerCreateTodo(client: CalDAVClient, server: McpServer) {
+export function registerCreateTodo(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		createTodoDefinition.name,
 		{
@@ -49,7 +48,9 @@ export function registerCreateTodo(client: CalDAVClient, server: McpServer) {
 		async (args: CreateTodoInput) => {
 			const { summary, due, start, description, location, reminderAt, status } =
 				args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 			const todo = await client.createTodo(calendarUrl, {
 				summary,
 				...(due !== undefined && { due: new Date(due) }),

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { hrefFor, toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
+import { hrefFor } from "./caldav-href.js";
 
 interface DeleteEventInput {
 	calendarUrl: string;
@@ -22,7 +22,7 @@ export const deleteEventDefinition = {
 	returns: "Confirmation message when the event is successfully deleted",
 } as const;
 
-export function registerDeleteEvent(client: CalDAVClient, server: McpServer) {
+export function registerDeleteEvent(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		deleteEventDefinition.name,
 		{
@@ -31,7 +31,9 @@ export function registerDeleteEvent(client: CalDAVClient, server: McpServer) {
 		},
 		async (args: DeleteEventInput) => {
 			const { uid } = args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 			const etag = await client.getETag(hrefFor(calendarUrl, uid));
 			await client.deleteEvent(calendarUrl, uid, etag);
 

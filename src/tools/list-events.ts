@@ -1,7 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CalDAVClient } from "ts-caldav";
 import { z } from "zod";
-import { toCalendarPath } from "./caldav-href.js";
+import type { Accounts } from "../accounts.js";
 import { readScheduling } from "./calendar-address.js";
 import { readTransparent } from "./event-extras.js";
 
@@ -34,7 +33,7 @@ export const listEventsDefinition = {
 		"A list of events that fall within the given timeframe, each containing `uid`, `summary`, `start`, `end`, and optionally `description`, `location`, `organizer` (email), `attendees` (emails), `alarms` (each with `action` and `trigger`, e.g. `-PT30M`) and `transparent` (true when the event is marked free)",
 } as const;
 
-export function registerListEvents(client: CalDAVClient, server: McpServer) {
+export function registerListEvents(accounts: Accounts, server: McpServer) {
 	server.registerTool(
 		listEventsDefinition.name,
 		{
@@ -43,7 +42,9 @@ export function registerListEvents(client: CalDAVClient, server: McpServer) {
 		},
 		async (args: ListEventsInput) => {
 			const { start, end } = args;
-			const calendarUrl = toCalendarPath(args.calendarUrl, client.baseUrl);
+			const { calendarUrl, client } = await accounts.forCalendar(
+				args.calendarUrl
+			);
 			const options = {
 				end: new Date(end),
 				start: new Date(start),

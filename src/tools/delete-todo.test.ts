@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient } from "ts-caldav";
 import { CalDAVError } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerDeleteTodo } from "./delete-todo.js";
 
 type ToolHandler = (params: {
@@ -31,7 +32,10 @@ describe("registerDeleteTodo", () => {
 			getETag: vi.fn().mockResolvedValue('"etag-1"'),
 		};
 		const { server, getHandler } = makeServer();
-		registerDeleteTodo(mockClient as unknown as CalDAVClient, server);
+		registerDeleteTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -56,7 +60,10 @@ describe("registerDeleteTodo", () => {
 				.mockRejectedValue(new CalDAVError("Failed to retrieve ETag.", 404)),
 		};
 		const { server, getHandler } = makeServer();
-		registerDeleteTodo(mockClient as unknown as CalDAVClient, server);
+		registerDeleteTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -76,7 +83,10 @@ describe("registerDeleteTodo", () => {
 				.mockRejectedValue(new CalDAVError("Server exploded.", 500)),
 		};
 		const { server, getHandler } = makeServer();
-		registerDeleteTodo(mockClient as unknown as CalDAVClient, server);
+		registerDeleteTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");

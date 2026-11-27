@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Event } from "ts-caldav";
 import { CalDAVClient } from "ts-caldav";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerUpdateEvent } from "./update-event.js";
 
 type ToolHandler = (params: {
@@ -65,7 +66,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -101,7 +105,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -126,7 +133,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -152,7 +162,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -183,7 +196,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -215,7 +231,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -242,7 +261,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -281,7 +303,10 @@ describe("registerUpdateEvent", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -334,7 +359,10 @@ describe("registerUpdateEvent whole-day handling", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -480,7 +508,10 @@ describe("registerUpdateEvent whole-day handling", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -519,7 +550,10 @@ describe("registerUpdateEvent whole-day handling", () => {
 		};
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -549,7 +583,10 @@ describe("registerUpdateEvent whole-day handling", () => {
 			updateEvent: vi.fn().mockResolvedValue({ uid: "event-123" }),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -633,7 +670,10 @@ describe("registerUpdateEvent organizer and attendees", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(mockClient as unknown as CalDAVClient, server);
+		registerUpdateEvent(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -762,7 +802,7 @@ describe("registerUpdateEvent alarm round trip", () => {
 			.mockResolvedValue({ data: "", headers: {}, status: 204 });
 
 		const { server, getHandler } = makeServer();
-		registerUpdateEvent(client, server);
+		registerUpdateEvent(singleAccount(client), server);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");

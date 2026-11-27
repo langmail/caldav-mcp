@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CalDAVClient, Todo } from "ts-caldav";
 import { describe, expect, it, vi } from "vitest";
+import { singleAccount } from "../accounts.js";
 import { registerUpdateTodo } from "./update-todo.js";
 
 type ToolHandler = (params: {
@@ -50,7 +51,10 @@ describe("registerUpdateTodo", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+		registerUpdateTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -85,7 +89,10 @@ describe("registerUpdateTodo", () => {
 			updateTodo: vi.fn(),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+		registerUpdateTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -113,7 +120,10 @@ describe("registerUpdateTodo", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+		registerUpdateTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -144,7 +154,10 @@ describe("registerUpdateTodo", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+		registerUpdateTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -178,7 +191,10 @@ describe("registerUpdateTodo", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+		registerUpdateTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -211,7 +227,10 @@ describe("registerUpdateTodo", () => {
 			}),
 		};
 		const { server, getHandler } = makeServer();
-		registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+		registerUpdateTodo(
+			singleAccount(mockClient as unknown as CalDAVClient),
+			server
+		);
 		const handler = getHandler();
 		if (!handler) {
 			throw new Error("handler not registered");
@@ -246,7 +265,10 @@ describe("registerUpdateTodo", () => {
 				updateTodo: vi.fn().mockResolvedValue({ uid: "todo-123" }),
 			};
 			const { server, getHandler } = makeServer();
-			registerUpdateTodo(mockClient as unknown as CalDAVClient, server);
+			registerUpdateTodo(
+				singleAccount(mockClient as unknown as CalDAVClient),
+				server
+			);
 			const handler = getHandler();
 			if (!handler) {
 				throw new Error("handler not registered");

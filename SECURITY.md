@@ -57,11 +57,13 @@ caldav-mcp is a local [Model Context Protocol](https://modelcontextprotocol.io)
 server that talks to your CalDAV provider over stdio. A few things to keep in
 mind when deploying it securely:
 
-- **Credentials** (`CALDAV_BASE_URL`, `CALDAV_USERNAME`, `CALDAV_PASSWORD`) are
-  read from environment variables. Never commit your `.env` file or hard-code
+- **Credentials** (`CALDAV_BASE_URL`, `CALDAV_USERNAME`, `CALDAV_PASSWORD`, or
+  `CALDAV_<NAME>_*` for each account in `CALDAV_ACCOUNTS`) are read from
+  environment variables. Whoever can use the server, over HTTP whoever holds
+  `MCP_AUTH_TOKEN`, reaches every configured account. Never commit your `.env` file or hard-code
   credentials — `.env` is git-ignored, and a gitleaks pre-commit hook guards
   against accidental secret leaks.
-- **Always use HTTPS** for `CALDAV_BASE_URL` so credentials and calendar data
+- **Always use HTTPS** for every CalDAV base URL so credentials and calendar data
   are encrypted in transit.
 - Prefer app-specific or scoped passwords over your primary account password
   where your CalDAV provider supports them.

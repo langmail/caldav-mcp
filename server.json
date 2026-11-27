@@ -36,6 +36,13 @@
 					"isRequired": true,
 					"format": "string",
 					"isSecret": true
+				},
+				{
+					"name": "CALDAV_ACCOUNTS",
+					"description": "Optional comma-separated account names (e.g. personal,family) to serve several CalDAV accounts; each needs CALDAV_<NAME>_BASE_URL, _USERNAME and _PASSWORD, and the three variables above are then ignored",
+					"isRequired": false,
+					"format": "string",
+					"isSecret": false
 				}
 			]
 		}
