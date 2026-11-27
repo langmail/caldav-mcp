@@ -1,3 +1,9 @@
+# [0.15.0](https://github.com/langmail/caldav-mcp/compare/v0.14.0...v0.15.0) (2026-11-27)
+
+### Features
+
+* serve several CalDAV accounts from one server ([#209](https://github.com/langmail/caldav-mcp/issues/209)) ([70fdcae](https://github.com/langmail/caldav-mcp/commit/70fdcae61515ac051f2fcf01445db3fd1b54e4a3)), closes [#207](https://github.com/langmail/caldav-mcp/issues/207)
+
 # [0.14.0](https://github.com/langmail/caldav-mcp/compare/v0.13.2...v0.14.0) (2026-11-26)
 
 ### Features
